@@ -3,7 +3,7 @@ import axios from "axios";
 const MAX_RETRIES = 5;
 
 const axiosInstance = axios.create({
-  baseURL: "https://chat-application-1-gnru.onrender.com/",
+  baseURL: "https://chat-application-2-g4pg.onrender.com",
 });
 
 axiosInstance.interceptors.response.use(

@@ -65,12 +65,8 @@ export default function Register() {
     if (handleValidation()) {
       const { email, username, password } = values;
       try {
-        const { data } = await axios.post(registerRoute, {
-          username,
-          email,
-          password,
-        });
-
+        console.log('Sending request with:', { username, email, password });  // Log the request data
+        const { data } = await axios.post(registerRoute, { username, email, password });
         if (data.status === false) {
           toast.error(data.msg, toastOptions);
         } else {
@@ -78,13 +74,17 @@ export default function Register() {
           navigate("/");
         }
       } catch (error) {
-        toast.error(
-          "Something went wrong. Please try again later.",
-          toastOptions
-        );
+        console.error('Error during registration:', error);
+        const errorMessage = error.response
+          ? error.response.data.msg
+          : "Something went wrong. Please try again later.";
+        toast.error(errorMessage, toastOptions);
       }
     }
   };
+  
+  
+  
 
   return (
     <>
