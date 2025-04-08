@@ -51,13 +51,9 @@ export default function SetAvatar() {
       toast.error("Failed to fetch avatars. Please try again.", toastOptions);
       setIsLoading(false);
     }
-  }, []);
-  
-  
+  }, [toastOptions]);
 
-  useEffect(() => {
-    fetchAvatars();
-  }, [fetchAvatars]);
+
 
   const setProfilePicture = async () => {
     if (selectedAvatar === undefined) {
