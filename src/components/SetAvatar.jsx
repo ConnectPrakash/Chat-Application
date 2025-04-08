@@ -53,7 +53,7 @@ export default function SetAvatar() {
     }
   }, [toastOptions]);
 
-
+fetchAvatars();
 
   const setProfilePicture = async () => {
     if (selectedAvatar === undefined) {
