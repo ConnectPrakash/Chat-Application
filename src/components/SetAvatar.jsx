@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import loader from "../assets/loader.gif";
@@ -13,13 +13,14 @@ export default function SetAvatar() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAvatar, setSelectedAvatar] = useState(undefined);
 
-  const toastOptions = {
+  // Memoize toastOptions to avoid re-creation on every render
+  const toastOptions = useMemo(() => ({
     position: "bottom-right",
     autoClose: 8000,
     pauseOnHover: true,
     draggable: true,
     theme: "dark",
-  };
+  }), []);
 
   useEffect(() => {
     const checkUser = () => {
@@ -37,12 +38,12 @@ export default function SetAvatar() {
           `https://api.dicebear.com/7.x/adventurer/svg?seed=${randomId}`,
           { responseType: "text" }
         );
-  
+
         // Proper Base64 encoding for UTF-8 SVG using a browser-safe method
         const base64Avatar = btoa(unescape(encodeURIComponent(res.data)));
         return base64Avatar;
       });
-  
+
       const results = await Promise.all(promises);
       setAvatars(results);
       setIsLoading(false);
@@ -53,7 +54,9 @@ export default function SetAvatar() {
     }
   }, [toastOptions]);
 
-fetchAvatars();
+  useEffect(() => {
+    fetchAvatars();
+  }, [fetchAvatars]);
 
   const setProfilePicture = async () => {
     if (selectedAvatar === undefined) {
