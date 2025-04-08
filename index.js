@@ -12,7 +12,11 @@ const messageRoutes = require("./routes/messages");
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "http://localhost:3001" }));
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://another-origin.com'],
+  methods: 'GET,POST',
+  allowedHeaders: 'Content-Type,Authorization',
+}));
 app.use(express.json());
 
 // ✅ MongoDB Connection

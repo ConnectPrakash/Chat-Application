@@ -11,6 +11,7 @@ module.exports.login = async (req, res, next) => {
     if (!isPasswordValid)
       return res.json({ msg: "Incorrect Username or Password", status: false });
     delete user.password;
+    console.log("Hi");
     return res.json({ status: true, user });
   } catch (ex) {
     next(ex);
@@ -20,22 +21,41 @@ module.exports.login = async (req, res, next) => {
 module.exports.register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
+
+    // Basic validation
+    if (!username || !email || !password) {
+      return res
+        .status(400)
+        .json({ msg: "Please fill all fields", status: false });
+    }
+
+    // Check if username is taken
     const usernameCheck = await User.findOne({ username });
     if (usernameCheck)
       return res.json({ msg: "Username already used", status: false });
+
+    // Check if email is taken
     const emailCheck = await User.findOne({ email });
     if (emailCheck)
       return res.json({ msg: "Email already used", status: false });
+
+    // Hash password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
     const user = await User.create({
       email,
       username,
       password: hashedPassword,
     });
-    delete user.password;
-    return res.json({ status: true, user });
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    return res.json({ status: true, user: userWithoutPassword });
   } catch (ex) {
-    next(ex);
+    console.error("Register error:", ex); // Log the error
+    res.status(500).json({ msg: "Internal Server Error", error: ex.message });
   }
 };
 
