@@ -1,55 +1,58 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const axios = require("axios");
+require("dotenv").config();
+const router = express.Router();
+
+// Route Imports
 const authRoutes = require("./routes/auth");
 const messageRoutes = require("./routes/messages");
-const app = express();
-const socket = require("socket.io");
-require("dotenv").config();
 
-app.use(cors());
+const app = express();
+
+// Middleware
+app.use(cors({ origin: "http://localhost:3001" }));
 app.use(express.json());
 
-mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("DB Connetion Successfull");
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+// ✅ MongoDB Connection
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("✅ DB Connection Successful"))
+.catch((err) => console.error("❌ DB Connection Error:", err.message));
 
-app.get("/ping", (_req, res) => {
-  return res.json({ msg: "Ping Successful" });
+// ✅ Avatar Route
+
+router.get("/avatar/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const response = await axios.get(`https://api.multiavatar.com/${id}`, {
+      responseType: "text",
+    });
+
+    const svg = response.data;
+    const base64Avatar = Buffer.from(svg).toString("base64");
+
+    res.json({ avatar: base64Avatar });
+  } catch (error) {
+    console.error("❌ Error fetching avatar:", error.message);
+    res.status(500).send("Error fetching avatar");
+  }
 });
 
+// ✅ API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-const server = app.listen(process.env.PORT, () =>
-  console.log(`Server started on ${process.env.PORT}`)
-);
-const io = socket(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    credentials: true,
-  },
+// ✅ Default Route (Optional)
+app.get("/", (req, res) => {
+  res.send("✨ Welcome to the Chat App Backend!");
 });
 
-global.onlineUsers = new Map();
-io.on("connection", (socket) => {
-  global.chatSocket = socket;
-  socket.on("add-user", (userId) => {
-    onlineUsers.set(userId, socket.id);
-  });
-
-  socket.on("send-msg", (data) => {
-    const sendUserSocket = onlineUsers.get(data.to);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("msg-recieve", data.msg);
-    }
-  });
+// ✅ Start Server
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
